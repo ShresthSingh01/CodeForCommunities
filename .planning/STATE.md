@@ -2,17 +2,18 @@
 
 **Project:** JanMitra AI — Constituency Digital Twin + Priority Optimizer
 **Milestone:** 1 (Core MVP)
-**Current Phase:** 4 (Explanation Card - Gemini Integration)
+**Current Phase:** 5 (Citizen Widget)
 **Last Updated:** 2026-07-05
 
 ---
 
 ## Current Status
 
-**Phases 2 & 3 complete.** MP Dashboard & Budget Simulation Slider fully built and functional. Ready for Phase 4.
+**Phase 4 complete.** Explanation Card (Gemini integration & Case File modal) built and verified. Ready for Phase 5.
 
 ## What's Done
 
+- ✅ Phase 4: Grounded Gemini AI Explanation Card modal with verbatim prompt constraints & official Case File UI.
 - ✅ Phase 3: Client-side Budget Simulation Slider with live re-computation and visual feedback.
 - ✅ Phase 2: MP Dashboard (Threaded Ledger, DocketCard stack, MapPanel with ward pins, signature animated EvidenceThread SVG).
 - ✅ Phase 1: Firestore seed data and priority engine logic implemented. Ward 7 water correctly ranked #1.

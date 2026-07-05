@@ -7,12 +7,14 @@ import DocketCard from '../components/DocketCard';
 import MapPanel from '../components/MapPanel';
 import EvidenceThread from '../components/EvidenceThread';
 import BudgetSlider from '../components/BudgetSlider';
+import ExplanationCard from '../components/ExplanationCard';
 
 export default function Dashboard() {
   const [rawClusters, setRawClusters] = useState(CLUSTERS);
   const [budget, setBudget] = useState(3500000); // Default ₹35 Lakhs
   const [selectedCluster, setSelectedCluster] = useState(null);
   const [hoveredCluster, setHoveredCluster] = useState(null);
+  const [activeCaseFile, setActiveCaseFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const containerRef = useRef(null);
@@ -113,7 +115,10 @@ export default function Dashboard() {
                   <DocketCard
                     cluster={cluster}
                     isSelected={selectedCluster?.id === cluster.id}
-                    onSelect={setSelectedCluster}
+                    onSelect={(c) => {
+                      setSelectedCluster(c);
+                      setActiveCaseFile(c);
+                    }}
                     onHover={setHoveredCluster}
                     cardRef={(el) => (cardRefs.current[cluster.id] = el)}
                   />
@@ -131,7 +136,10 @@ export default function Dashboard() {
               clusters={rankedClusters}
               selectedCluster={selectedCluster}
               hoveredCluster={hoveredCluster}
-              onSelectCluster={setSelectedCluster}
+              onSelectCluster={(c) => {
+                setSelectedCluster(c);
+                setActiveCaseFile(c);
+              }}
               pinRefs={pinRefs}
             />
           </div>
@@ -157,6 +165,14 @@ export default function Dashboard() {
         pinRefs={pinRefs}
         containerRef={containerRef}
       />
+
+      {/* Explanation Card Case File Modal */}
+      {activeCaseFile && (
+        <ExplanationCard
+          cluster={activeCaseFile}
+          onClose={() => setActiveCaseFile(null)}
+        />
+      )}
     </div>
   );
 }
