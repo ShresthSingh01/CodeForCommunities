@@ -2,17 +2,18 @@
 
 **Project:** JanMitra AI — Constituency Digital Twin + Priority Optimizer
 **Milestone:** 1 (Core MVP)
-**Current Phase:** 0 (not yet started)
+**Current Phase:** 1 (Firestore Seed Data)
 **Last Updated:** 2026-07-05
 
 ---
 
 ## Current Status
 
-**Project initialized.** Ready to begin Phase 0 (scaffold).
+**Phase 0 complete.** Ready to begin Phase 1.
 
 ## What's Done
 
+- ✅ Phase 0: Vite+React scaffolded, Tailwind v4 design tokens applied, Firebase init script created, Express backend stubbed.
 - ✅ Project initialized (PROJECT.md, REQUIREMENTS.md, ROADMAP.md)
 - ✅ Git initialized
 - ✅ All source documents analyzed (PRD, Core MVP Plan, UI/UX Design Plan, Master Build Prompt)

@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-ink-navy: #14213D;
+  --color-aged-parchment: #EDE6D2;
+  --color-marigold: #E8A33D;
+  --color-seal-red: #A6323A;
+  --color-evidence-teal: #2F6E68;
+  --color-slate-ink: #4A5064;
+
+  --font-display: 'Fraunces', serif;
+  --font-body: '"IBM Plex Sans"', sans-serif;
+  --font-mono: '"IBM Plex Mono"', monospace;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-ink-navy);
+    color: var(--color-aged-parchment);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+.paper-texture {
+  position: relative;
+}
+
+.paper-texture::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
