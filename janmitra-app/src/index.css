@@ -23,8 +23,15 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Visible Marigold Focus Ring for Accessibility */
+  :focus-visible {
+    outline: 2px solid #E8A33D !important;
+    outline-offset: 2px !important;
+  }
 }
 
+/* Paper Grain Texture */
 .paper-texture {
   position: relative;
 }
@@ -33,7 +40,56 @@
   content: "";
   position: absolute;
   inset: 0;
-  opacity: 0.03;
+  opacity: 0.035;
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Ink Stamp Press Keyframe Animation */
+@keyframes stampPress {
+  0% {
+    transform: scale(1.4) rotate(6deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.92) rotate(-4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-3deg);
+    opacity: 1;
+  }
+}
+
+/* SVG Evidence Thread Draw Animation */
+@keyframes threadDraw {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-stamp-press {
+  animation: stampPress 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-thread-draw {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: threadDraw 0.75s ease-out forwards;
+}
+
+/* Motion Accessibility Rule: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-stamp-press,
+  .animate-thread-draw,
+  .animate-pulse,
+  .animate-ping,
+  .animate-bounce {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
+  }
 }

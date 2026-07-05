@@ -17,10 +17,19 @@ export default function DocketCard({ cluster, isSelected, onSelect, onHover, car
   return (
     <div
       ref={cardRef}
+      tabIndex={0}
+      role="button"
+      aria-pressed={isSelected}
       onClick={() => onSelect(cluster)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(cluster);
+        }
+      }}
       onMouseEnter={() => onHover && onHover(cluster)}
       onMouseLeave={() => onHover && onHover(null)}
-      className={`relative paper-texture transition-all duration-200 cursor-pointer p-4 mb-3 rounded-sm border ${
+      className={`relative paper-texture transition-all duration-200 cursor-pointer p-4 mb-3 rounded-sm border focus-visible:outline-none ${
         isSelected
           ? 'bg-aged-parchment border-marigold ring-2 ring-marigold shadow-lg transform -translate-y-0.5'
           : 'bg-aged-parchment/95 hover:bg-aged-parchment border-slate-ink/30 hover:border-marigold/60 shadow'
@@ -39,10 +48,10 @@ export default function DocketCard({ cluster, isSelected, onSelect, onHover, car
 
         {/* Urgency Ink Stamp */}
         <div
-          className={`font-mono text-xs font-bold px-2 py-0.5 uppercase border-2 tracking-widest transition-transform ${
+          className={`font-mono text-xs font-bold px-2 py-0.5 uppercase border-2 tracking-widest transition-all ${
             isCritical
-              ? 'text-seal-red border-seal-red rotate-[-3deg] shadow-sm'
-              : 'text-slate-ink border-slate-ink rotate-[2deg] opacity-80'
+              ? 'text-seal-red border-seal-red animate-stamp-press shadow-sm'
+              : 'text-slate-ink border-slate-ink opacity-80'
           }`}
         >
           {isCritical ? 'CRITICAL' : 'MODERATE'}

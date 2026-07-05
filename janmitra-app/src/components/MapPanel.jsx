@@ -109,8 +109,17 @@ export default function MapPanel({ clusters, selectedCluster, hoveredCluster, on
                 if (pinRefs) pinRefs.current[cluster.id] = el;
               }}
               style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+              tabIndex={0}
+              role="button"
+              aria-label={`Map Pin for ${cluster.ward} ${cluster.issue_type}, Rank ${cluster.rank}`}
               onClick={() => onSelectCluster(cluster)}
-              className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 z-20 group ${
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectCluster(cluster);
+                }
+              }}
+              className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 z-20 focus-visible:outline-none group ${
                 isSelected || isHovered ? 'scale-125 z-30' : 'scale-100'
               }`}
             >
