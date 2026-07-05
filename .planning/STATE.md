@@ -2,17 +2,18 @@
 
 **Project:** JanMitra AI — Constituency Digital Twin + Priority Optimizer
 **Milestone:** 1 (Core MVP)
-**Current Phase:** 1 (Firestore Seed Data)
+**Current Phase:** 2 (MP Dashboard)
 **Last Updated:** 2026-07-05
 
 ---
 
 ## Current Status
 
-**Phase 0 complete.** Ready to begin Phase 1.
+**Phase 1 complete.** Ready to begin Phase 2.
 
 ## What's Done
 
+- ✅ Phase 1: Firestore seed data and priority engine logic implemented. Ward 7 water correctly ranked #1.
 - ✅ Phase 0: Vite+React scaffolded, Tailwind v4 design tokens applied, Firebase init script created, Express backend stubbed.
 - ✅ Project initialized (PROJECT.md, REQUIREMENTS.md, ROADMAP.md)
 - ✅ Git initialized
