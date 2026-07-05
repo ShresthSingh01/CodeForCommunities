@@ -2,17 +2,18 @@
 
 **Project:** JanMitra AI — Constituency Digital Twin + Priority Optimizer
 **Milestone:** 1 (Core MVP)
-**Current Phase:** 5 (Citizen Widget)
+**Current Phase:** 6 (Visual Polish Pass)
 **Last Updated:** 2026-07-05
 
 ---
 
 ## Current Status
 
-**Phase 4 complete.** Explanation Card (Gemini integration & Case File modal) built and verified. Ready for Phase 5.
+**Phase 5 complete.** Citizen Widget (WhatsApp-styled intake with Web Speech API voice) built and verified. Ready for Phase 6.
 
 ## What's Done
 
+- ✅ Phase 5: WhatsApp-styled Citizen Ingestion Widget with text, Web Speech API voice input, AI extraction endpoint & seamless navigation.
 - ✅ Phase 4: Grounded Gemini AI Explanation Card modal with verbatim prompt constraints & official Case File UI.
 - ✅ Phase 3: Client-side Budget Simulation Slider with live re-computation and visual feedback.
 - ✅ Phase 2: MP Dashboard (Threaded Ledger, DocketCard stack, MapPanel with ward pins, signature animated EvidenceThread SVG).
