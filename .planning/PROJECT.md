@@ -1,5 +1,17 @@
 # JanMitra AI — PROJECT.md
 
+## Current Milestone: v2.0 — Real Intelligence Layer
+
+**Goal:** Replace the two critical PPT-vs-reality gaps with genuine implementations: Vertex AI semantic embeddings for dynamic complaint clustering, and a live Constituency Digital Twin (CSTE) driven by real Firestore state — plus Google Maps migration and Hindi voice fix.
+
+**Target features:**
+- Vertex AI `text-embedding-004` pipeline: embed complaints, cosine-similarity clustering, dynamic cluster ID assignment, Firestore embedding storage, batch re-clustering script
+- Live Constituency Digital Twin: CSTE baseline from Firestore aggregates, queryable ward-state API, live metrics panel, historical state persistence
+- Google Maps migration: replace Leaflet with `@googlemaps/react-wrapper`, rank-colored Markers, Geocoding API for ward coordinates
+- Hindi voice support: `hi-IN` speech recognition, language-aware voice switching in CitizenWidget
+
+---
+
 ## What This Is
 
 **JanMitra AI** is a Constituency Digital Twin + Priority Optimizer built for the "People's Priorities" hackathon track (Google Technologies). It helps Members of Parliament (MPs) convert raw citizen complaints and public data into explainable, ranked development priorities — with live budget simulation.
@@ -192,30 +204,37 @@ Aligned to Master Build Prompt phases:
 
 ## Requirements
 
-### Validated
-(None yet — ship to validate)
+### Validated (v1.0 MVP — Shipped)
+- [x] 4-screen MVP (Citizen Widget, MP Dashboard, Explanation Card, Budget Simulation)
+- [x] Firestore seed: 15+ complaints, 8+ clusters, 3 wards, 4 issue types
+- [x] Priority scoring formula with exact weights and greedy budget selection
+- [x] Gemini grounded explanation cards with anti-hallucination constraints
+- [x] Design tokens, EvidenceThread SVG, docket animations
+- [x] MOCK labels on all fallback paths
 
-### Active
-- [ ] 4-screen MVP (Citizen Widget, MP Dashboard, Explanation Card, Budget Simulation)
-- [ ] Firestore seed: 15–20 complaints, ~8–10 clusters, 3 wards, 4 issue types
-- [ ] Priority scoring formula implemented exactly per spec (6 weights, adjustable constants)
-- [ ] Budget simulation: greedy ImpactPerRupee selection, client-side, no backend round-trip
-- [ ] Gemini explanation: grounded prompting, narrates pre-computed scores only
-- [ ] Design tokens: all 6 colors + 3 fonts applied via Tailwind config
-- [ ] EvidenceThread SVG component: stroke-draw animation on docket hover/select
-- [ ] Docket cards: Fraunces rank numbers, ink-stamp urgency badges
-- [ ] One orchestrated animation per screen (thread draw, docket reshuffle)
-- [ ] prefers-reduced-motion respected
-- [ ] All API keys via .env (never hardcoded)
-- [ ] MOCK labels on any fallback/simulated API calls
+### Active (v2.0 — Real Intelligence Layer)
+- [ ] Vertex AI text-embedding-004: embed complaints on submission
+- [ ] Cosine-similarity matrix + dynamic cluster formation with configurable threshold
+- [ ] Cluster IDs auto-assigned from semantic grouping (not hardcoded)
+- [ ] Embedding vectors stored in Firestore per complaint document
+- [ ] Batch re-clustering script for existing seed data
+- [ ] CSTE baseline computed from live Firestore aggregates (not hardcoded)
+- [ ] CSTE before/after state uses real ward population and recurrence data
+- [ ] CSTE queryable API: ward-state query endpoint
+- [ ] Live CSTE metrics panel on dashboard
+- [ ] CSTE state persisted to Firestore for trend tracking
+- [ ] Google Maps JS API replacing Leaflet (`@googlemaps/react-wrapper`)
+- [ ] Rank-colored Google Maps Markers for ward pins
+- [ ] Google Maps Geocoding API for ward coordinates
+- [ ] Hindi speech recognition in CitizenWidget (`hi-IN`)
+- [ ] Language-selector drives voice recognition language
 
-### Out of Scope
-- Image input — no demo payoff, adds complexity
-- Auth/login flows — no auth screens in demo path
-- WhatsApp Business API — fake with styled web widget
-- Cloud Speech-to-Text — Web Speech API sufficient
-- BigQuery live joins — pre-join into Firestore at seed time
-- Vertex AI embeddings — hand-crafted seed data
+### Out of Scope (v2.0)
+- Image complaint input — no demo payoff
+- Full DP budget optimization (greedy sufficient for demo scale)
+- Auth/login flows — not in demo path
+- BigQuery live joins — Firestore sufficient for hackathon scale
+- Looker Studio embeds — out of scope
 
 ---
 
@@ -229,4 +248,4 @@ This document evolves at phase transitions and milestone boundaries.
 3. Decisions to log? → Add to Key Decisions
 
 ---
-*Last updated: 2026-07-05 after initialization*
+*Last updated: 2026-07-08 — Milestone v2.0 started (Real Intelligence Layer)*
