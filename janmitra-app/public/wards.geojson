@@ -1,0 +1,47 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "ward": "Ward 3", "population": 45000 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [77.2100, 28.6100],
+          [77.2150, 28.6100],
+          [77.2150, 28.6150],
+          [77.2100, 28.6150],
+          [77.2100, 28.6100]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "ward": "Ward 7", "population": 38000 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [77.2150, 28.6150],
+          [77.2200, 28.6150],
+          [77.2200, 28.6200],
+          [77.2150, 28.6200],
+          [77.2150, 28.6150]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "ward": "Ward 9", "population": 52000 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [77.2000, 28.6000],
+          [77.2050, 28.6000],
+          [77.2050, 28.6050],
+          [77.2000, 28.6050],
+          [77.2000, 28.6000]
+        ]]
+      }
+    }
+  ]
+}

@@ -1,10 +1,9 @@
 // Gemini API integration for Explanation Card
 // Strictly grounded in pre-computed cluster data per Anti-Hallucination rules
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-
 export async function explainClusterPriority(cluster) {
-  const isMock = !GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY";
+  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+  const isMock = !GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY" || GEMINI_API_KEY.includes("YOUR_");
 
   const evidenceBullets = [
     `Rank Position: #${cluster.rank}`,
@@ -44,7 +43,7 @@ Narrate these facts in plain language. Do not calculate, estimate, or add any nu
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -55,6 +54,11 @@ Narrate these facts in plain language. Do not calculate, estimate, or add any nu
     );
 
     const data = await response.json();
+    if (data.error) {
+      console.error("🔴 Google Gemini API Error:", data.error.message);
+      throw new Error(`Google API Error: ${data.error.message}`);
+    }
+
     const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!generatedText) {

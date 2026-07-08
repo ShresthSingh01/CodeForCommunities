@@ -26,3 +26,16 @@ export const VULNERABILITY_INDEX = {
   pedestrians: 0.7,
   default: 0.5
 };
+
+// Synergy Matrix for static combination multipliers
+export const SYNERGY_MATRIX = {
+  'road+health': 0.20,
+  'health+road': 0.20,
+  'water+health': 0.15,
+  'health+water': 0.15,
+  'road+education': 0.15,
+  'education+road': 0.15,
+};
+
+// Threshold for Vertex AI text-embedding-004 cosine similarity clustering
+export const SIMILARITY_THRESHOLD = 0.75;

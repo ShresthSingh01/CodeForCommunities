@@ -6,20 +6,27 @@
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "client": "vite",
-    "server": "node server/index.js",
+    "server": "node --watch server/index.js",
     "seed": "node scripts/seed.js",
+    "recluster": "node scripts/recluster.js",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@googlemaps/react-wrapper": "^1.2.0",
     "concurrently": "^10.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "firebase": "^12.15.0",
+    "firebase-admin": "^14.1.0",
+    "i18next": "^26.3.4",
+    "i18next-browser-languagedetector": "^8.2.1",
+    "puppeteer": "^25.3.0",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "react-i18next": "^17.0.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.2",

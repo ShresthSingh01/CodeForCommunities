@@ -1,0 +1,14 @@
+{
+  "translation": {
+    "dashboard.title": "निर्वाचन क्षेत्र परिचालन कियोस्क",
+    "dashboard.subtitle": "नागरिकों की शिकायतों की निगरानी करें, बजट आवंटित करें और प्रभावों का मॉडल तैयार करें।",
+    "sidebar.home": "होम",
+    "sidebar.issues": "समस्याएं",
+    "sidebar.planner": "पोर्टफोलियो प्लानर",
+    "sidebar.simulator": "सिम्युलेटर",
+    "sidebar.map": "वार्ड मैप",
+    "sidebar.kiosk": "नागरिक कियोस्क",
+    "sidebar.reports": "रिपोर्ट्स",
+    "sidebar.settings": "सेटिंग्स"
+  }
+}

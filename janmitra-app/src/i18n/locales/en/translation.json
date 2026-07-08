@@ -1,0 +1,14 @@
+{
+  "translation": {
+    "dashboard.title": "Constituency Operational Kiosk",
+    "dashboard.subtitle": "Monitor and manage citizen complaints, allocate budgets, and model impacts.",
+    "sidebar.home": "Home",
+    "sidebar.issues": "Issues",
+    "sidebar.planner": "Portfolio Planner",
+    "sidebar.simulator": "Simulator",
+    "sidebar.map": "Ward Map",
+    "sidebar.kiosk": "Citizen Kiosk",
+    "sidebar.reports": "Reports",
+    "sidebar.settings": "Settings"
+  }
+}

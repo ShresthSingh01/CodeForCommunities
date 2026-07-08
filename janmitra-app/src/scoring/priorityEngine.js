@@ -1,4 +1,4 @@
-import { WEIGHTS, URGENCY_SEVERITY, VULNERABILITY_INDEX } from './weights.js';
+import { WEIGHTS, URGENCY_SEVERITY, VULNERABILITY_INDEX, SYNERGY_MATRIX } from './weights.js';
 
 /**
  * Normalizes an array of values to a 0-1 scale.
@@ -51,26 +51,55 @@ export function computeRankings(clusters, customWeights = WEIGHTS) {
     const gapNorm = normServiceGaps[index];
     const costNorm = normCosts[index];
 
-    // PriorityScore = w1*UrgencySeverity + w2*AffectedPopulationNorm + w3*RecurrenceScore + w4*ServiceGapNorm + w5*VulnerabilityIndex - w6*EstimatedCostNorm
-    const priority_score = 
-      (customWeights.w1 * urgency) +
-      (customWeights.w2 * popNorm) +
-      (customWeights.w3 * recScore) +
-      (customWeights.w4 * gapNorm) +
-      (customWeights.w5 * vulnIndex) -
-      (customWeights.w6 * costNorm);
-      
-    // Prevent division by zero
-    const safeCost = cluster.estimated_cost_inr > 0 ? cluster.estimated_cost_inr : 1;
+    // Need Score = Urgency + Recurrence + Service Gap
+    const need_score = 
+      (customWeights.w1 * urgency) + 
+      (customWeights.w3 * recScore) + 
+      (customWeights.w4 * gapNorm);
+
+    // Impact Score = Population + Vulnerability
+    const impact_score = 
+      (customWeights.w2 * popNorm) + 
+      (customWeights.w5 * vulnIndex);
+
+    // Synergy Score
+    let synergy_score = 0;
+    const synergyContributors = [];
     
-    // ImpactPerRupee = PriorityScore / estimated_cost_inr
-    // We multiply by 100000 just to keep the float readable (impact per Lakh INR)
-    const impact_per_lakh = (priority_score / safeCost) * 100000;
+    // Look at other clusters in the same ward to calculate synergy
+    clusters.forEach(otherCluster => {
+      if (otherCluster.id !== cluster.id && otherCluster.ward === cluster.ward) {
+        const comboKey = `${cluster.issue_type}+${otherCluster.issue_type}`;
+        const bonus = SYNERGY_MATRIX[comboKey] || 0;
+        if (bonus > 0) {
+          synergy_score += bonus;
+          const cType = cluster.issue_type.charAt(0).toUpperCase() + cluster.issue_type.slice(1);
+          const oType = otherCluster.issue_type.charAt(0).toUpperCase() + otherCluster.issue_type.slice(1);
+          synergyContributors.push(`+${bonus} from ${cType}+${oType} in ${cluster.ward}`);
+        }
+      }
+    });
+
+    const synergy_explanation = synergyContributors.length > 0 
+      ? synergyContributors.join(', ') 
+      : 'No synergy identified in this ward';
+
+    // Prevent division by zero and scale cost to Lakhs INR for cleaner decimals
+    const safeCost = cluster.estimated_cost_inr > 0 ? cluster.estimated_cost_inr : 1;
+    const cost_lakhs = safeCost / 100000;
+
+    // CIO Formula: Decision Score = (Need * Impact * (1 + Synergy)) / Cost(Lakhs)
+    const base_score = need_score * impact_score * (1 + synergy_score);
+    const priority_score = base_score / cost_lakhs;
 
     return {
       ...cluster,
+      need_score,
+      impact_score,
+      synergy_score,
+      synergy_explanation,
       priority_score,
-      impact_per_rupee: impact_per_lakh // Rename to keep it conceptually the same
+      impact_per_rupee: priority_score // Aligning UI field with new priority score
     };
   });
 

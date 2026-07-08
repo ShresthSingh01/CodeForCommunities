@@ -1,158 +1,209 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { Wrapper } from '@googlemaps/react-wrapper';
 
-// Ward definitions with normalized relative coordinates (0-100%) for visual rendering
-const WARDS_CONFIG = [
-  { name: 'Ward 7', color: '#14213D', path: 'M 10,10 L 60,15 L 55,60 L 15,55 Z', labelPos: { x: 30, y: 30 } },
-  { name: 'Ward 3', color: '#1E293B', path: 'M 60,15 L 95,20 L 90,65 L 55,60 Z', labelPos: { x: 75, y: 35 } },
-  { name: 'Ward 9', color: '#0F172A', path: 'M 15,55 L 55,60 L 90,65 L 85,95 L 20,95 Z', labelPos: { x: 50, y: 75 } },
-];
+function GoogleMapInner({ clusters, selectedCluster, hoveredCluster, onSelectCluster, onSelectWard, geoData }) {
+  const mapRef = useRef(null);
+  const [map, setMap] = useState(null);
+  const markersRef = useRef([]);
 
-export default function MapPanel({ clusters, selectedCluster, hoveredCluster, onSelectCluster, pinRefs }) {
-  // Coordinate bounds mapping to relative 10-90% SVG canvas
-  const getPinPosition = (cluster) => {
-    // Map cluster wards to fixed canvas coordinates for pixel-perfect evidence threads
-    if (cluster.ward === 'Ward 7' || cluster.id?.includes('W7')) {
-      if (cluster.issue_type === 'water') return { x: 32, y: 35 };
-      return { x: 42, y: 45 };
+  useEffect(() => {
+    if (mapRef.current && !map) {
+      const newMap = new window.google.maps.Map(mapRef.current, {
+        center: { lat: 28.610, lng: 77.210 },
+        zoom: 14,
+        disableDefaultUI: true,
+        styles: [
+          { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
+          { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
+          { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+          { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#17263c' }] }
+        ]
+      });
+      setMap(newMap);
     }
-    if (cluster.ward === 'Ward 3' || cluster.id?.includes('W3')) {
-      if (cluster.issue_type === 'road') return { x: 72, y: 32 };
-      if (cluster.issue_type === 'education') return { x: 80, y: 48 };
-      return { x: 65, y: 52 };
+  }, [mapRef, map]);
+
+  // Handle GeoJSON data
+  useEffect(() => {
+    if (map && geoData) {
+      map.data.addGeoJson(geoData);
+      map.data.setStyle({
+        fillColor: '#1e293b',
+        fillOpacity: 0.4,
+        strokeWeight: 1,
+        strokeColor: '#475569'
+      });
+      map.data.addListener('click', (event) => {
+        const ward = event.feature.getProperty('ward');
+        if (onSelectWard && ward) onSelectWard(ward);
+      });
     }
-    // Ward 9
-    if (cluster.issue_type === 'health') return { x: 48, y: 72 };
-    if (cluster.issue_type === 'water') return { x: 35, y: 82 };
-    return { x: 70, y: 78 };
-  };
+  }, [map, geoData, onSelectWard]);
+
+  // Manage Markers
+  useEffect(() => {
+    if (!map) return;
+
+    // Clear existing markers
+    markersRef.current.forEach(m => m.setMap(null));
+    markersRef.current = [];
+
+    const getPinColor = (cluster) => {
+      const isCritical = cluster.urgency === 'critical' || cluster.issue_type === 'water' || cluster.issue_type === 'health';
+      if (isCritical) return '#ef4444'; // bg-urgent-red
+      if (cluster.priority_score > 0.4) return '#f97316'; // bg-warning-orange
+      return '#3b82f6'; // bg-need-blue
+    };
+
+    const getPinPosition = (cluster) => {
+      if (cluster.location?.lat && cluster.location?.lng) {
+        return { lat: cluster.location.lat, lng: cluster.location.lng };
+      }
+      
+      // Fallback coordinates based on the synthetic GeoJSON we created
+      if (cluster.ward === 'Ward 3' || cluster.id?.includes('W3')) {
+        if (cluster.issue_type === 'road') return { lat: 28.612, lng: 77.212 };
+        if (cluster.issue_type === 'education') return { lat: 28.614, lng: 77.214 };
+        return { lat: 28.611, lng: 77.213 };
+      }
+      if (cluster.ward === 'Ward 7' || cluster.id?.includes('W7')) {
+        if (cluster.issue_type === 'water') return { lat: 28.616, lng: 77.216 };
+        return { lat: 28.618, lng: 77.218 };
+      }
+      if (cluster.issue_type === 'health') return { lat: 28.602, lng: 77.202 };
+      if (cluster.issue_type === 'water') return { lat: 28.604, lng: 77.204 };
+      return { lat: 28.603, lng: 77.201 };
+    };
+
+    let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+    let hasPoints = false;
+
+    clusters.forEach(cluster => {
+      const position = getPinPosition(cluster);
+      const isSelected = selectedCluster?.id === cluster.id;
+      const isHovered = hoveredCluster?.id === cluster.id;
+      const color = getPinColor(cluster);
+
+      minLat = Math.min(minLat, position.lat);
+      maxLat = Math.max(maxLat, position.lat);
+      minLng = Math.min(minLng, position.lng);
+      maxLng = Math.max(maxLng, position.lng);
+      hasPoints = true;
+
+      // Create an SVG icon
+      const size = isSelected || isHovered ? 20 : 12;
+      const svgMarker = {
+        path: window.google.maps.SymbolPath.CIRCLE,
+        fillColor: color,
+        fillOpacity: 0.9,
+        strokeWeight: isSelected ? 3 : 1,
+        strokeColor: '#0f172a',
+        scale: size / 2, // scale is radius
+      };
+
+      const marker = new window.google.maps.Marker({
+        position,
+        map,
+        icon: svgMarker,
+        title: `${cluster.ward} - ${cluster.issue_type}`,
+      });
+
+      marker.addListener('click', () => {
+        if (onSelectCluster) onSelectCluster(cluster);
+      });
+
+      markersRef.current.push(marker);
+    });
+
+    if (hasPoints && clusters.length > 0) {
+      if (minLat === maxLat && minLng === maxLng) {
+        map.panTo({ lat: minLat, lng: minLng });
+      } else {
+        const bounds = new window.google.maps.LatLngBounds(
+          { lat: minLat - 0.01, lng: minLng - 0.01 },
+          { lat: maxLat + 0.01, lng: maxLng + 0.01 }
+        );
+        map.fitBounds(bounds);
+      }
+    }
+  }, [map, clusters, selectedCluster, hoveredCluster, onSelectCluster]);
+
+  return <div ref={mapRef} style={{ width: '100%', height: '100%' }} />;
+}
+
+export default function MapPanel({ clusters, selectedCluster, hoveredCluster, onSelectCluster, onSelectWard }) {
+  const [geoData, setGeoData] = useState(null);
+  
+  // Geocode missing coordinates using our new backend endpoint
+  useEffect(() => {
+    const geocodeMissing = async () => {
+      for (const cluster of clusters) {
+        if (!cluster.location?.lat || !cluster.location?.lng) {
+          try {
+            const res = await fetch(`/api/geocode-ward?ward=${encodeURIComponent(cluster.ward)}`);
+            const data = await res.json();
+            if (data.lat && data.lng) {
+              if (!cluster.location) cluster.location = {};
+              cluster.location.lat = data.lat;
+              cluster.location.lng = data.lng;
+            }
+          } catch (err) {
+            console.error('Failed to geocode', cluster.ward, err);
+          }
+        }
+      }
+    };
+    if (clusters.length > 0) {
+      geocodeMissing();
+    }
+  }, [clusters]);
+
+  useEffect(() => {
+    fetch('/wards.geojson')
+      .then((res) => res.json())
+      .then((data) => setGeoData(data))
+      .catch((err) => console.error("Failed to load wards GeoJSON", err));
+  }, []);
+
+  const apiKey = import.meta.env.VITE_MAPS_API_KEY || import.meta.env.GOOGLE_MAPS_API_KEY;
+
+  if (!apiKey || apiKey.includes('YOUR_')) {
+    return (
+      <div className="relative w-full h-full min-h-[300px] bg-slate-950 overflow-hidden flex flex-col items-center justify-center p-6 text-center text-slate-400">
+        <svg className="w-16 h-16 mb-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p className="font-semibold text-lg mb-2">// MOCK: Google Maps Placeholder</p>
+        <p className="text-sm max-w-sm">Provide VITE_MAPS_API_KEY in .env to enable the interactive map.</p>
+        <div className="mt-6 w-full max-w-md text-left bg-slate-900 p-4 rounded-lg border border-slate-800">
+          <h4 className="text-xs uppercase text-slate-500 mb-2">Ward Data Summary</h4>
+          <ul className="text-sm space-y-1">
+            {clusters.map(c => (
+              <li key={c.id} className="flex justify-between border-b border-slate-800/50 pb-1">
+                <span>{c.ward}</span>
+                <span className={c.urgency === 'critical' ? 'text-red-400' : 'text-blue-400'}>
+                  {c.issue_type}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative w-full h-full min-h-[450px] bg-ink-navy border border-slate-ink/30 rounded-sm overflow-hidden flex flex-col">
-      {/* Map Header Overlay */}
-      <div className="absolute top-3 left-3 z-10 bg-ink-navy/90 backdrop-blur border border-slate-ink/40 px-3 py-1.5 rounded text-xs font-mono text-aged-parchment flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span>CONSTITUENCY DIGITAL TWIN — WARD GEO-GRAPH</span>
-      </div>
-
-      {/* Map Legend */}
-      <div className="absolute bottom-3 left-3 z-10 bg-ink-navy/90 backdrop-blur border border-slate-ink/40 p-2 rounded text-[11px] font-mono text-slate-ink flex gap-3">
-        <div className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-marigold border border-ink-navy"></span>
-          <span className="text-aged-parchment">Rank #1 Target</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-evidence-teal border border-ink-navy"></span>
-          <span className="text-aged-parchment">Priority Docket</span>
-        </div>
-      </div>
-
-      {/* Interactive Geo Canvas */}
-      <div className="relative flex-1 w-full h-full bg-slate-950/60 flex items-center justify-center">
-        <svg viewBox="0 0 100 100" className="w-full h-full object-cover">
-          {/* Grid Background */}
-          <defs>
-            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-              <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#2F6E68" strokeWidth="0.15" strokeOpacity="0.3" />
-            </pattern>
-          </defs>
-          <rect width="100" height="100" fill="url(#grid)" />
-
-          {/* Ward Boundaries */}
-          {WARDS_CONFIG.map((ward) => (
-            <g key={ward.name}>
-              <path
-                d={ward.path}
-                fill={ward.color}
-                fillOpacity="0.4"
-                stroke="#2F6E68"
-                strokeWidth="0.5"
-                strokeDasharray="1,1"
-                className="transition-all duration-300 hover:fill-opacity-60"
-              />
-              <text
-                x={ward.labelPos.x}
-                y={ward.labelPos.y}
-                fill="#EDE6D2"
-                fillOpacity="0.35"
-                fontSize="3.5"
-                fontFamily="IBM Plex Mono"
-                textAnchor="middle"
-                className="pointer-events-none select-none uppercase font-bold tracking-widest"
-              >
-                {ward.name}
-              </text>
-            </g>
-          ))}
-
-          {/* Connective Geometry Lines */}
-          <path
-            d="M 32,35 L 72,32 L 48,72 Z"
-            fill="none"
-            stroke="#E8A33D"
-            strokeWidth="0.2"
-            strokeDasharray="0.5,1"
-            opacity="0.5"
-          />
-        </svg>
-
-        {/* Render Cluster Map Pins */}
-        {clusters.map((cluster) => {
-          const pos = getPinPosition(cluster);
-          const isSelected = selectedCluster?.id === cluster.id;
-          const isHovered = hoveredCluster?.id === cluster.id;
-          const isTopRank = cluster.rank === 1;
-
-          return (
-            <div
-              key={cluster.id}
-              ref={(el) => {
-                if (pinRefs) pinRefs.current[cluster.id] = el;
-              }}
-              style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-              tabIndex={0}
-              role="button"
-              aria-label={`Map Pin for ${cluster.ward} ${cluster.issue_type}, Rank ${cluster.rank}`}
-              onClick={() => onSelectCluster(cluster)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSelectCluster(cluster);
-                }
-              }}
-              className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 z-20 focus-visible:outline-none group ${
-                isSelected || isHovered ? 'scale-125 z-30' : 'scale-100'
-              }`}
-            >
-              {/* Pulse Ring for Top Rank / Selected */}
-              {(isTopRank || isSelected) && (
-                <span
-                  className={`absolute -inset-2 rounded-full animate-ping opacity-75 ${
-                    isTopRank ? 'bg-marigold' : 'bg-evidence-teal'
-                  }`}
-                />
-              )}
-
-              {/* Pin Marker Body */}
-              <div
-                className={`relative flex items-center justify-center font-display font-bold text-xs rounded-full w-8 h-8 border-2 shadow-xl transition-all ${
-                  isTopRank
-                    ? 'bg-marigold text-ink-navy border-aged-parchment ring-2 ring-marigold/50'
-                    : isSelected
-                    ? 'bg-evidence-teal text-aged-parchment border-marigold ring-2 ring-marigold'
-                    : 'bg-ink-navy text-aged-parchment border-evidence-teal hover:border-marigold'
-                }`}
-              >
-                №{cluster.rank}
-              </div>
-
-              {/* Pin Tooltip */}
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover:block bg-ink-navy border border-slate-ink px-2 py-1 rounded text-[10px] font-mono whitespace-nowrap text-aged-parchment z-40 shadow-lg">
-                <span className="text-marigold font-bold">{cluster.ward}</span> · {cluster.issue_type}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+    <div className="relative w-full h-full min-h-[300px] bg-slate-950 overflow-hidden flex flex-col z-0">
+      <Wrapper apiKey={apiKey} libraries={["places"]}>
+        <GoogleMapInner 
+          clusters={clusters} 
+          selectedCluster={selectedCluster} 
+          hoveredCluster={hoveredCluster}
+          onSelectCluster={onSelectCluster}
+          onSelectWard={onSelectWard}
+          geoData={geoData}
+        />
+      </Wrapper>
     </div>
   );
 }

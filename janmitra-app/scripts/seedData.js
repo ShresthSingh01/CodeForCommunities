@@ -2,9 +2,9 @@
 // 3 Wards: Ward 3, Ward 7, Ward 9
 // 4 Issue Types: water, road, health, education
 
-const WARD_3_CENTER = { lat: 28.6139, lng: 77.2090 };
-const WARD_7_CENTER = { lat: 28.6200, lng: 77.2150 };
-const WARD_9_CENTER = { lat: 28.6300, lng: 77.2250 };
+const WARD_3_CENTER = { lat: 28.6125, lng: 77.2125 };
+const WARD_7_CENTER = { lat: 28.6175, lng: 77.2175 };
+const WARD_9_CENTER = { lat: 28.6025, lng: 77.2025 };
 
 // Helper to generate jittered coords around a center
 const jitter = (center, maxOffset = 0.005) => ({
@@ -161,6 +161,36 @@ export const CLUSTERS = [
     public_evidence: [
       "Budget allocated but disbursement delayed"
     ],
-    estimated_cost_inr: 800000, // ₹8L
+  }
+].map(c => ({ ...c, constituency_id: 'varanasi', id: `CL_VAR_${c.id.split('CL_')[1]}` }));
+
+export const LUCKNOW_CLUSTERS = [
+  {
+    id: "CL_LKO_W2_WATER",
+    issue_type: "water",
+    ward: "Ward 2",
+    location: { lat: 26.8467, lng: 80.9462 },
+    complaint_count: 55,
+    recurrence_score: 0.9,
+    affected_population: 5000,
+    nearest_facility_km: 4.0,
+    public_evidence: ["Major pipeline leak in Hazratganj"],
+    estimated_cost_inr: 800000,
+    constituency_id: "lucknow"
+  },
+  {
+    id: "CL_LKO_W5_ROAD",
+    issue_type: "road",
+    ward: "Ward 5",
+    location: { lat: 26.8500, lng: 80.9500 },
+    complaint_count: 30,
+    recurrence_score: 0.7,
+    affected_population: 3000,
+    nearest_facility_km: 1.0,
+    public_evidence: ["Gomti Nagar main road heavily damaged"],
+    estimated_cost_inr: 4500000,
+    constituency_id: "lucknow"
   }
 ];
+
+export const ALL_CLUSTERS = [...CLUSTERS, ...LUCKNOW_CLUSTERS];
