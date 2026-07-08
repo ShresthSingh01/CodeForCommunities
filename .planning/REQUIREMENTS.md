@@ -1,93 +1,102 @@
-# JanMitra AI — Requirements
+# JanMitra AI — REQUIREMENTS.md
 
-**Milestone 1:** Core MVP (hackathon demo)
+**Milestone v2.0:** Real Intelligence Layer
 **Status:** Active
+**Last updated:** 2026-07-08
 
 ---
 
 ## Functional Requirements
 
-### FR-01: Citizen Widget
-- **Must:** Text input field accepting plain text complaints
-- **Must:** Submit complaint to Firestore with Gemini extraction (issue_type, location ward, urgency, affected_group)
-- **Must:** WhatsApp-styled UI (dark green header, message bubbles, send button)
-- **Should:** Web Speech API voice input (hold-to-speak, large tap target)
-- **Should not:** Image input (out of scope)
-- **Should not:** Require login
+### EMBED — Vertex AI Embedding Pipeline
 
-### FR-02: MP Dashboard — Threaded Ledger
-- **Must:** Render ranked docket cards from Firestore cluster data
-- **Must:** Docket cards show: `№ XX` rank (Fraunces font), issue type, ward, affected population, urgency stamp
-- **Must:** Google Maps panel with ward pins, colored by rank position
-- **Must:** EvidenceThread SVG animation: on docket hover/select, draw teal line from docket to map pin
-- **Must:** Dashboard loads and draws threads once on initial render
+- **EMBED-01:** When a citizen submits a complaint, the system calls Vertex AI `text-embedding-004` to generate an embedding vector for `raw_text` and stores it on the Firestore complaint document.
+- **EMBED-02:** The system computes a cosine-similarity matrix across all complaint embeddings and identifies complaint pairs with similarity ≥ 0.75.
+- **EMBED-03:** The system dynamically groups high-similarity complaints into a shared cluster, forming clusters from complaint content (not hardcoded type+ward keys).
+- **EMBED-04:** The system auto-assigns a `cluster_id` to each complaint based on its semantic cluster membership (not `CL_W7_WATER` style hardcoded IDs).
+- **EMBED-05:** Each Firestore complaint document stores its `embedding` vector as a float array field.
+- **EMBED-06:** A `scripts/recluster.js` script reads all existing complaints from Firestore, generates embeddings for any without them, recomputes the similarity matrix, and updates cluster assignments — runnable as `npm run recluster`.
 
-### FR-03: Explanation Card
-- **Must:** Opens as overlay/modal when docket card is clicked
-- **Must:** Calls Gemini API once, passing pre-computed evidence bullets as input
-- **Must:** Gemini prompt includes verbatim: *"Narrate these facts in plain language. Do not calculate, estimate, or add any number not provided above."*
-- **Must:** Displays: why this rank, affected population, facility distance, complaint count, recurrence pattern, public evidence
-- **Must not:** Display any number not in the seed data or computed by the formula
+### TWIN — Constituency Digital Twin (CSTE)
 
-### FR-04: Budget Simulation Slider
-- **Must:** Slider control on MP Dashboard (range: ₹5L to ₹1Cr)
-- **Must:** On slider release, client-side greedy algorithm selects clusters by ImpactPerRupee descending until budget exhausted
-- **Must:** Docket list re-renders with spring animation (150–200ms) showing new ranking
-- **Must:** Newly top-ranked docket gets ink-press stamp animation on reshuffle
-- **Must not:** Make backend API call on slider drag (client-side only)
+- **TWIN-01:** The CSTE engine derives its baseline state from live Firestore cluster aggregates at query time, replacing all hardcoded constants (`facilityDistance: 4.5`, `waterCoverage: 54`, etc.).
+- **TWIN-02:** The "before" (current) state is computed from actual cluster data: average `nearest_facility_km` for health clusters, average `recurrence_score`-weighted population for water/education domains.
+- **TWIN-03:** The "after" (projected) state applies the CSTE improvement formula using actual `affected_population` and `recurrence_score` values from funded clusters — no synthetic multipliers.
+- **TWIN-04:** A `/api/cste-state` Express endpoint accepts a `ward` query parameter and returns the current Digital Twin state for that ward (or all wards if no ward specified).
+- **TWIN-05:** A CSTE metrics panel is added to the MP Dashboard, showing current vs. projected values for water coverage, healthcare access, school attendance, and average facility distance.
+- **TWIN-06:** On Budget Simulator confirmation, the system writes a CSTE snapshot document to Firestore (`cste_snapshots` collection) with timestamp, budget, funded cluster IDs, and computed metrics — enabling historical trend comparison.
+
+### MAPS — Google Maps Platform Migration
+
+- **MAPS-01:** `MapPanel.jsx` is rewritten to use `@googlemaps/react-wrapper` and the Google Maps JavaScript API, removing all `leaflet` and `react-leaflet` dependencies.
+- **MAPS-02:** Ward pins use `google.maps.Marker` with SVG icons colored by rank: marigold (#E8A33D) for rank #1, evidence-teal (#2F6E68) for rank #2+, seal-red (#A6323A) for critical urgency.
+- **MAPS-03:** Ward center coordinates are resolved via the Google Maps Geocoding API (`/api/geocode-ward` backend endpoint) rather than hardcoded lat/lng — with cached results in Firestore to avoid repeated API calls.
+
+### VOICE — Hindi Voice Support
+
+- **VOICE-01:** The speech recognition language (`rec.lang`) in `CitizenWidget.jsx` is set to `hi-IN` when the active i18n language is Hindi, and `en-US` when English.
+- **VOICE-02:** The language selector in the Citizen Widget (or TopBar) triggers an i18n language change that also updates the active speech recognition language for the next voice recording.
 
 ---
 
 ## Non-Functional Requirements
 
-### NFR-01: Performance
-- Budget simulation re-render must feel instant (<100ms compute for ≤20 clusters)
-- No map tiles or heavy libraries loaded on Citizen Widget
+### NFR-EMBED-01: Embedding Performance
+- Embedding API call must complete within 3 seconds; show a loading indicator during embedding generation.
+- If Vertex AI API key is missing or call fails, the system gracefully falls back to rule-based `type+ward` clustering and labels the complaint as `// FALLBACK CLUSTER`.
 
-### NFR-02: Design Compliance
-- All 6 color tokens defined in Tailwind config (`ink-navy`, `aged-parchment`, `marigold`, `seal-red`, `evidence-teal`, `slate-ink`)
-- No raw hex values in component files
-- Google Fonts loaded: Fraunces (display), IBM Plex Sans (body), IBM Plex Mono (data)
-- Sharp corners (4px border-radius) on docket/panel surfaces
-- `prefers-reduced-motion` respected: animations appear instantly, no motion
+### NFR-EMBED-02: Similarity Threshold
+- Cosine similarity threshold (0.75) must be exposed as a named constant in `src/scoring/weights.js` — not an inline magic number.
 
-### NFR-03: Data Integrity
-- Seed data: exactly 3 wards, 4 issue types, 15–20 complaints, 8–10 clusters
-- All cluster scores computed by the exact formula with exact default weights
-- Ward 7 water issue should rank convincingly #1 in default state
+### NFR-TWIN-01: Live Data Contract
+- CSTE baseline must query Firestore on each render cycle (or on cluster data change via `onSnapshot`) — never cache stale values indefinitely.
+- CSTE state computation must be deterministic: same input clusters → same output metrics.
 
-### NFR-04: Anti-Hallucination
-- All `// MOCK` labels on any API fallback or simulated call
-- Gemini never called without pre-computed evidence in the prompt
-- No placeholder statistics that look real
+### NFR-MAPS-01: Maps Fallback
+- If `VITE_MAPS_API_KEY` is missing, `MapPanel.jsx` falls back to a styled placeholder div showing ward names and coordinates as text — does not crash or show a blank screen.
 
-### NFR-05: Configuration
-- All API keys in `.env` (VITE_GEMINI_API_KEY, VITE_MAPS_API_KEY, FIREBASE_PROJECT_ID, etc.)
-- Priority weights exposed as named constants in a dedicated `weights.js` file (not inline magic numbers)
+### NFR-MAPS-02: Dependency Cleanup
+- After Google Maps migration, `leaflet` and `react-leaflet` must be removed from `package.json` to avoid the OpenStreetMap tile URLs being visible during demo.
+
+### NFR-VOICE-01: Language Parity
+- Voice recognition language must stay in sync with the displayed UI language at all times. Switching language mid-session updates `rec.lang` before the next recording starts.
 
 ---
 
-## Acceptance Criteria (Demo Script Verification)
+## Acceptance Criteria
 
-- [ ] **AC-01:** Submit a text complaint via Citizen Widget → complaint appears in Firestore → dashboard updates
-- [ ] **AC-02:** MP Dashboard shows ranked docket list in correct order (Ward 7 water #1 with default weights/budget)
-- [ ] **AC-03:** Hover/click a docket → teal evidence thread draws to map pin
-- [ ] **AC-04:** Click top docket → Explanation Card opens with Gemini-generated narrative (real API call)
-- [ ] **AC-05:** Drag budget slider from ₹1Cr to ₹20L → ranking reshuffles live, some dockets drop off, animation plays
-- [ ] **AC-06:** All design tokens visible: navy background, parchment cards, marigold accent, red urgency stamps, teal threads
-- [ ] **AC-07:** No broken API calls, no fake success paths without `// MOCK` label
+- [ ] **AC-EMBED-01:** Submit a new Hindi-language complaint → complaint document in Firestore has an `embedding` array field with 768 floats.
+- [ ] **AC-EMBED-02:** Submit two complaints about the same ward water issue using different wording → they are assigned the same `cluster_id` by the dynamic clustering engine.
+- [ ] **AC-EMBED-03:** `npm run recluster` completes without error and updates `cluster_id` on all seed complaint documents.
+- [ ] **AC-TWIN-01:** CSTE panel on dashboard shows different baseline values when cluster data changes (not always the same hardcoded 54%, 4.5 km, etc.).
+- [ ] **AC-TWIN-02:** Selecting funded projects in Budget Simulator and confirming writes a document to Firestore `cste_snapshots` collection.
+- [ ] **AC-TWIN-03:** `/api/cste-state?ward=Ward+7` returns a JSON object with `waterCoverage`, `facilityDistance`, `healthcareAccess`, `schoolAttendance`.
+- [ ] **AC-MAPS-01:** Map panel renders with Google Maps tiles (not OpenStreetMap) — verified by inspecting tile URLs in browser DevTools.
+- [ ] **AC-MAPS-02:** Ward 7 pin is marigold (#E8A33D), Ward 3 and Ward 9 pins are teal. No Leaflet CSS loaded.
+- [ ] **AC-VOICE-01:** Switch language to Hindi → tap mic button → browser requests Hindi speech → transcription returns Hindi text.
+- [ ] **AC-VOICE-02:** Switch language to English → mic produces English transcription.
 
 ---
 
-## Out of Scope
+## Traceability (Phase → REQ-IDs)
+
+| Phase | Requirements |
+|-------|-------------|
+| Phase 7 — Vertex AI Embedding Pipeline | EMBED-01, EMBED-02, EMBED-03, EMBED-04, EMBED-05, EMBED-06, NFR-EMBED-01, NFR-EMBED-02 |
+| Phase 8 — Live Constituency Digital Twin | TWIN-01, TWIN-02, TWIN-03, TWIN-04, TWIN-05, TWIN-06, NFR-TWIN-01 |
+| Phase 9 — Google Maps Migration | MAPS-01, MAPS-02, MAPS-03, NFR-MAPS-01, NFR-MAPS-02 |
+| Phase 10 — Hindi Voice + Integration Polish | VOICE-01, VOICE-02, NFR-VOICE-01 |
+
+---
+
+## Out of Scope (v2.0)
 
 | Item | Reason |
 |---|---|
-| Image complaint input | No demo payoff |
+| Full DP knapsack optimization | Greedy is sufficient at demo scale (≤20 clusters) |
 | Auth / login screens | Not in demo path |
-| Real WhatsApp Business API | Web widget is sufficient for demo |
+| BigQuery live joins | Firestore sufficient for hackathon |
+| Looker Studio embeds | Out of milestone scope |
+| Image complaint input | No demo payoff |
+| Real WhatsApp Business API | Web widget sufficient |
 | Cloud Speech-to-Text | Web Speech API sufficient |
-| BigQuery live joins | Pre-joined into Firestore at seed time |
-| Vertex AI embeddings | Hand-crafted synthetic clusters |
-| Multi-ward data beyond 3 wards | Depth over breadth |
-| Admin panel, settings pages | Not in 4-screen scope |
