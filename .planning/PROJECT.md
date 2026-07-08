@@ -1,14 +1,18 @@
 # JanMitra AI — PROJECT.md
 
-## Current Milestone: v2.0 — Real Intelligence Layer
+## Current Milestone: v2.1 — Prototype Readiness Fixes
 
-**Goal:** Replace the two critical PPT-vs-reality gaps with genuine implementations: Vertex AI semantic embeddings for dynamic complaint clustering, and a live Constituency Digital Twin (CSTE) driven by real Firestore state — plus Google Maps migration and Hindi voice fix.
+**Goal:** Fix the critical demo-killers (Hindi voice, simulateCSTE arg, embedding save, offline queue, map provider, scores) discovered during the brutal prototype readiness audit, ensuring a flawless live presentation.
 
 **Target features:**
-- Vertex AI `text-embedding-004` pipeline: embed complaints, cosine-similarity clustering, dynamic cluster ID assignment, Firestore embedding storage, batch re-clustering script
-- Live Constituency Digital Twin: CSTE baseline from Firestore aggregates, queryable ward-state API, live metrics panel, historical state persistence
-- Google Maps migration: replace Leaflet with `@googlemaps/react-wrapper`, rank-colored Markers, Geocoding API for ward coordinates
-- Hindi voice support: `hi-IN` speech recognition, language-aware voice switching in CitizenWidget
+- P0: Fix Hindi voice `rec.lang = 'hi-IN'` in `CitizenWidget.jsx`
+- P0: Fix `simulateCSTE(fundedClusters, clusters)` missing argument in `BudgetSimulator.jsx`
+- P0: Fix CitizenWidget to save the `embedding` field to Firestore
+- P0: Remove "Offline Queuing" from pitch deck (fastest fix)
+- P1: Migrate to Google Maps (originally Phase 9 of v2.0)
+- P1: Update pitch deck numbers to match real engine output
+- P2: Fix empty constituency switcher (hide it or seed data)
+- P2: Replace placeholder sidebar pages with minimal content
 
 ---
 
@@ -212,22 +216,27 @@ Aligned to Master Build Prompt phases:
 - [x] Design tokens, EvidenceThread SVG, docket animations
 - [x] MOCK labels on all fallback paths
 
-### Active (v2.0 — Real Intelligence Layer)
-- [ ] Vertex AI text-embedding-004: embed complaints on submission
-- [ ] Cosine-similarity matrix + dynamic cluster formation with configurable threshold
-- [ ] Cluster IDs auto-assigned from semantic grouping (not hardcoded)
-- [ ] Embedding vectors stored in Firestore per complaint document
-- [ ] Batch re-clustering script for existing seed data
-- [ ] CSTE baseline computed from live Firestore aggregates (not hardcoded)
-- [ ] CSTE before/after state uses real ward population and recurrence data
-- [ ] CSTE queryable API: ward-state query endpoint
-- [ ] Live CSTE metrics panel on dashboard
-- [ ] CSTE state persisted to Firestore for trend tracking
-- [ ] Google Maps JS API replacing Leaflet (`@googlemaps/react-wrapper`)
-- [ ] Rank-colored Google Maps Markers for ward pins
-- [ ] Google Maps Geocoding API for ward coordinates
-- [ ] Hindi speech recognition in CitizenWidget (`hi-IN`)
-- [ ] Language-selector drives voice recognition language
+### Validated (v2.0 MVP — Real Intelligence Layer)
+- [x] Vertex AI text-embedding-004: embed complaints on submission
+- [x] Cosine-similarity matrix + dynamic cluster formation with configurable threshold
+- [x] Cluster IDs auto-assigned from semantic grouping (not hardcoded)
+- [x] Embedding vectors stored in Firestore per complaint document
+- [x] Batch re-clustering script for existing seed data
+- [x] CSTE baseline computed from live Firestore aggregates (not hardcoded)
+- [x] CSTE before/after state uses real ward population and recurrence data
+- [x] CSTE queryable API: ward-state query endpoint
+- [x] Live CSTE metrics panel on dashboard
+- [x] CSTE state persisted to Firestore for trend tracking
+
+### Active (v2.1 — Prototype Readiness Fixes)
+- [ ] P0: Fix Hindi voice `rec.lang = 'hi-IN'`
+- [ ] P0: Fix `simulateCSTE(fundedClusters, clusters)` missing arg
+- [ ] P0: Fix CitizenWidget to save `embedding` field to Firestore
+- [ ] P0: Remove "Offline Queuing" from pitch deck OR implement it
+- [ ] P1: Migrate to Google Maps (`@googlemaps/react-wrapper`)
+- [ ] P1: Update pitch deck numbers to match real engine output
+- [ ] P2: Fix empty constituency switcher (hide or seed data)
+- [ ] P2: Replace placeholder sidebar pages with minimal content
 
 ### Out of Scope (v2.0)
 - Image complaint input — no demo payoff
@@ -248,4 +257,4 @@ This document evolves at phase transitions and milestone boundaries.
 3. Decisions to log? → Add to Key Decisions
 
 ---
-*Last updated: 2026-07-08 — Milestone v2.0 started (Real Intelligence Layer)*
+*Last updated: 2026-07-08 — Milestone v2.1 started (Prototype Readiness Fixes)*
